@@ -17,6 +17,10 @@ score = 0
 collectible_row = 0
 collectible_col = 0
 
+# Hazard
+hazard_row = 0
+hazard_col = 0
+
 
 def spawn_collectible() -> None:
     """Spawn the collectible at a random position not occupied by the player."""
@@ -29,14 +33,28 @@ def spawn_collectible() -> None:
             break
 
 
+def spawn_hazard() -> None:
+    """Spawn the hazard at a random empty position."""
+    global hazard_row, hazard_col
+
+    while True:
+        hazard_row = random.randint(0, GRID_HEIGHT - 1)
+        hazard_col = random.randint(0, GRID_WIDTH - 1)
+        if (hazard_row, hazard_col) != (player_row, player_col) and \
+           (hazard_row, hazard_col) != (collectible_row, collectible_col):
+            break
+
+
 def draw_grid() -> None:
-    """Draw the grid with the player and collectible marked."""
+    """Draw the grid with the player, collectible, and hazard marked."""
     for row in range(GRID_HEIGHT):
         for col in range(GRID_WIDTH):
             if row == player_row and col == player_col:
                 print("[P]", end="")
             elif row == collectible_row and col == collectible_col:
                 print("[*]", end="")
+            elif row == hazard_row and col == hazard_col:
+                print("[X]", end="")
             else:
                 print("[.]", end="")
         print()  # New line after each row
@@ -66,12 +84,13 @@ def main() -> None:
     global score
 
     print("Welcome to the Grid Game!")
-    print("[P] = You, [*] = Collectible")
+    print("[P] = You, [*] = Collectible, [X] = Hazard")
     print("WASD to move, 'quit' to exit.")
-    print("Collect 10 items to win!")
+    print("Collect 10 items to win! Avoid the hazard!")
     input("Press Enter to start... ")
 
     spawn_collectible()
+    spawn_hazard()
 
     while True:
         clear_screen()
@@ -86,6 +105,15 @@ def main() -> None:
             break
         elif user_input in ("w", "a", "s", "d"):
             move_player(user_input)
+
+            # Check if player hit the hazard
+            if player_row == hazard_row and player_col == hazard_col:
+                clear_screen()
+                print(f"Score: {score}/10")
+                draw_grid()
+                print()
+                print("Game Over!")
+                break
 
             # Check if player collected the item
             if player_row == collectible_row and player_col == collectible_col:
