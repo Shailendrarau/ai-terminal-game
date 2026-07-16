@@ -160,7 +160,7 @@ def test_spawn_hazard_within_bounds():
 # ── Draw grid tests ─────────────────────────────────────────────
 
 def test_draw_grid_contains_player(capsys):
-    """Drawn grid contains [P] at the player position."""
+    """Drawn grid contains the player emoji."""
     game.player_row = 1
     game.player_col = 1
     game.collectible_row = 4
@@ -169,11 +169,11 @@ def test_draw_grid_contains_player(capsys):
     game.hazard_col = 3
     game.draw_grid()
     output = capsys.readouterr().out
-    assert "[P]" in output
+    assert game.PLAYER_EMOJI in output
 
 
 def test_draw_grid_contains_collectible(capsys):
-    """Drawn grid contains [*] at the collectible position."""
+    """Drawn grid contains the collectible emoji."""
     game.player_row = 0
     game.player_col = 0
     game.collectible_row = 2
@@ -182,11 +182,11 @@ def test_draw_grid_contains_collectible(capsys):
     game.hazard_col = 4
     game.draw_grid()
     output = capsys.readouterr().out
-    assert "[*]" in output
+    assert game.COLLECTIBLE_EMOJI in output
 
 
 def test_draw_grid_contains_hazard(capsys):
-    """Drawn grid contains [X] at the hazard position."""
+    """Drawn grid contains the hazard emoji."""
     game.player_row = 0
     game.player_col = 0
     game.collectible_row = 1
@@ -195,7 +195,7 @@ def test_draw_grid_contains_hazard(capsys):
     game.hazard_col = 2
     game.draw_grid()
     output = capsys.readouterr().out
-    assert "[X]" in output
+    assert game.HAZARD_EMOJI in output
 
 
 def test_draw_grid_has_correct_dimensions(capsys):
@@ -224,9 +224,9 @@ def test_draw_grid_no_overlap(capsys):
     game.hazard_col = 4
     game.draw_grid()
     output = capsys.readouterr().out
-    assert output.count("[P]") == 1
-    assert output.count("[*]") == 1
-    assert output.count("[X]") == 1
+    assert output.count(game.PLAYER_EMOJI) == 1
+    assert output.count(game.COLLECTIBLE_EMOJI) == 1
+    assert output.count(game.HAZARD_EMOJI) == 1
 
 
 # ── Scoring tests ───────────────────────────────────────────────
@@ -358,7 +358,7 @@ def test_show_end_screen_displays_score(capsys):
 
 
 def test_show_end_screen_displays_grid(capsys):
-    """End screen prints the grid."""
+    """End screen prints the grid with emojis."""
     game.player_row = 1
     game.player_col = 1
     game.collectible_row = 3
@@ -367,9 +367,9 @@ def test_show_end_screen_displays_grid(capsys):
     game.hazard_col = 4
     game.show_end_screen("Game Over!")
     output = capsys.readouterr().out
-    assert "[P]" in output
-    assert "[*]" in output
-    assert "[X]" in output
+    assert game.PLAYER_EMOJI in output
+    assert game.COLLECTIBLE_EMOJI in output
+    assert game.HAZARD_EMOJI in output
 
 
 # ── Play again tests ────────────────────────────────────────────

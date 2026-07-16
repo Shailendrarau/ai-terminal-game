@@ -8,6 +8,15 @@ import random
 GRID_WIDTH = 5
 GRID_HEIGHT = 5
 
+# Theme
+GAME_NAME = "[Dark Rider Dragon]"
+STORY_INTRO = "[a dragon fearless night ]"
+PLAYER_EMOJI = "🦊"
+COLLECTIBLE_EMOJI = "🚀"
+HAZARD_EMOJI = "🌋"
+WIN_MESSAGE = "WOHO ! YOU WIN"
+LOSE_MESSAGE = "opps you lose"
+
 # Game state
 player_row = 0
 player_col = 0
@@ -61,11 +70,11 @@ def draw_grid() -> None:
     for row in range(GRID_HEIGHT):
         for col in range(GRID_WIDTH):
             if row == player_row and col == player_col:
-                print("[P]", end="")
+                print(f"[{PLAYER_EMOJI}]", end="")
             elif row == collectible_row and col == collectible_col:
-                print("[*]", end="")
+                print(f"[{COLLECTIBLE_EMOJI}]", end="")
             elif row == hazard_row and col == hazard_col:
-                print("[X]", end="")
+                print(f"[{HAZARD_EMOJI}]", end="")
             else:
                 print("[.]", end="")
         print()
@@ -134,22 +143,25 @@ def run_game() -> None:
 
             # Check hazard collision
             if player_row == hazard_row and player_col == hazard_col:
-                show_end_screen("Game Over!")
+                show_end_screen(LOSE_MESSAGE)
                 return
 
             # Check collectible pickup
             if player_row == collectible_row and player_col == collectible_col:
                 score += 1
                 if score >= 10:
-                    show_end_screen("You win! You collected 10 items!")
+                    show_end_screen(WIN_MESSAGE)
                     return
                 spawn_collectible()
 
 
 def main() -> None:
     """Top-level game loop with play-again support."""
-    print("Welcome to the Grid Game!")
-    print("[P] = You, [*] = Collectible, [X] = Hazard")
+    print(f"=== {GAME_NAME} ===")
+    print()
+    print(STORY_INTRO)
+    print()
+    print(f"{PLAYER_EMOJI} = You, {COLLECTIBLE_EMOJI} = Collectible, {HAZARD_EMOJI} = Hazard")
     print("WASD to move, 'quit' to exit.")
     print("Collect 10 items to win! Avoid the hazard!")
     input("Press Enter to start... ")
