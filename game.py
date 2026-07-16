@@ -8,18 +8,29 @@ import random
 GRID_WIDTH = 5
 GRID_HEIGHT = 5
 
-# Player starting position (row, col)
+# Game state
 player_row = 0
 player_col = 0
-
-# Score and collectible
 score = 0
 collectible_row = 0
 collectible_col = 0
-
-# Hazard
 hazard_row = 0
 hazard_col = 0
+
+
+def reset_state() -> None:
+    """Reset all game state for a new round."""
+    global player_row, player_col, score
+    global collectible_row, collectible_col
+    global hazard_row, hazard_col
+
+    player_row = 0
+    player_col = 0
+    score = 0
+    collectible_row = 0
+    collectible_col = 0
+    hazard_row = 0
+    hazard_col = 0
 
 
 def spawn_collectible() -> None:
@@ -29,7 +40,7 @@ def spawn_collectible() -> None:
     while True:
         collectible_row = random.randint(0, GRID_HEIGHT - 1)
         collectible_col = random.randint(0, GRID_WIDTH - 1)
-        if collectible_row != player_row or collectible_col != player_col:
+        if (collectible_row, collectible_col) != (player_row, player_col):
             break
 
 
@@ -57,7 +68,7 @@ def draw_grid() -> None:
                 print("[X]", end="")
             else:
                 print("[.]", end="")
-        print()  # New line after each row
+        print()
 
 
 def move_player(direction: str) -> None:
@@ -79,16 +90,31 @@ def clear_screen() -> None:
     os.system("cls" if os.name == "nt" else "clear")
 
 
-def main() -> None:
-    """Main game loop."""
+def show_end_screen(message: str) -> None:
+    """Display the final grid and end-of-game message."""
+    clear_screen()
+    print(f"Score: {score}/10")
+    draw_grid()
+    print()
+    print(message)
+
+
+def play_again() -> bool:
+    """Prompt the user to play again. Returns True if yes, False if no."""
+    while True:
+        choice = input("Play again? (y/n): ").strip().lower()
+        if choice == "y":
+            return True
+        elif choice == "n":
+            return False
+        print("Please enter 'y' or 'n'.")
+
+
+def run_game() -> None:
+    """Run a single round of the game."""
     global score
 
-    print("Welcome to the Grid Game!")
-    print("[P] = You, [*] = Collectible, [X] = Hazard")
-    print("WASD to move, 'quit' to exit.")
-    print("Collect 10 items to win! Avoid the hazard!")
-    input("Press Enter to start... ")
-
+    reset_state()
     spawn_collectible()
     spawn_hazard()
 
@@ -101,33 +127,40 @@ def main() -> None:
         user_input = input("Enter command: ").strip().lower()
 
         if user_input == "quit":
-            print("Thanks for playing!")
-            break
-        elif user_input in ("w", "a", "s", "d"):
+            raise SystemExit
+
+        if user_input in ("w", "a", "s", "d"):
             move_player(user_input)
 
-            # Check if player hit the hazard
+            # Check hazard collision
             if player_row == hazard_row and player_col == hazard_col:
-                clear_screen()
-                print(f"Score: {score}/10")
-                draw_grid()
-                print()
-                print("Game Over!")
-                break
+                show_end_screen("Game Over!")
+                return
 
-            # Check if player collected the item
+            # Check collectible pickup
             if player_row == collectible_row and player_col == collectible_col:
                 score += 1
                 if score >= 10:
-                    clear_screen()
-                    print(f"Score: {score}/10")
-                    draw_grid()
-                    print()
-                    print("You win! You collected 10 items!")
-                    break
+                    show_end_screen("You win! You collected 10 items!")
+                    return
                 spawn_collectible()
-        else:
-            print(f"Unknown command: '{user_input}'\n")
+
+
+def main() -> None:
+    """Top-level game loop with play-again support."""
+    print("Welcome to the Grid Game!")
+    print("[P] = You, [*] = Collectible, [X] = Hazard")
+    print("WASD to move, 'quit' to exit.")
+    print("Collect 10 items to win! Avoid the hazard!")
+    input("Press Enter to start... ")
+
+    while True:
+        run_game()
+        if not play_again():
+            break
+
+    clear_screen()
+    print("Thanks for playing!")
 
 
 if __name__ == "__main__":

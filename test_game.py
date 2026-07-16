@@ -8,13 +8,7 @@ import game
 @pytest.fixture(autouse=True)
 def reset_game_state():
     """Reset global game state before every test."""
-    game.player_row = 0
-    game.player_col = 0
-    game.score = 0
-    game.collectible_row = 0
-    game.collectible_col = 0
-    game.hazard_row = 0
-    game.hazard_col = 0
+    game.reset_state()
     yield
 
 
@@ -276,3 +270,143 @@ def test_hazard_terminates_game():
     game.move_player("d")
     assert game.player_row == game.hazard_row
     assert game.player_col == game.hazard_col
+
+
+# ── Reset state tests ───────────────────────────────────────────
+
+def test_reset_state_clears_player():
+    """Reset puts player back at (0,0)."""
+    game.player_row = 4
+    game.player_col = 4
+    game.reset_state()
+    assert game.player_row == 0
+    assert game.player_col == 0
+
+
+def test_reset_state_clears_score():
+    """Reset sets score back to 0."""
+    game.score = 7
+    game.reset_state()
+    assert game.score == 0
+
+
+def test_reset_state_clears_collectible():
+    """Reset clears collectible position."""
+    game.collectible_row = 3
+    game.collectible_col = 3
+    game.reset_state()
+    assert game.collectible_row == 0
+    assert game.collectible_col == 0
+
+
+def test_reset_state_clears_hazard():
+    """Reset clears hazard position."""
+    game.hazard_row = 2
+    game.hazard_col = 2
+    game.reset_state()
+    assert game.hazard_row == 0
+    assert game.hazard_col == 0
+
+
+def test_reset_state_all_at_once():
+    """Reset clears everything in one call."""
+    game.player_row = 4
+    game.player_col = 4
+    game.score = 9
+    game.collectible_row = 3
+    game.collectible_col = 3
+    game.hazard_row = 2
+    game.hazard_col = 2
+    game.reset_state()
+    assert game.player_row == 0
+    assert game.player_col == 0
+    assert game.score == 0
+    assert game.collectible_row == 0
+    assert game.collectible_col == 0
+    assert game.hazard_row == 0
+    assert game.hazard_col == 0
+
+
+# ── Show end screen tests ───────────────────────────────────────
+
+def test_show_end_screen_displays_message(capsys):
+    """End screen prints the given message."""
+    game.score = 5
+    game.player_row = 0
+    game.player_col = 0
+    game.collectible_row = 1
+    game.collectible_col = 1
+    game.hazard_row = 2
+    game.hazard_col = 2
+    game.show_end_screen("Game Over!")
+    output = capsys.readouterr().out
+    assert "Game Over!" in output
+
+
+def test_show_end_screen_displays_score(capsys):
+    """End screen prints the current score."""
+    game.score = 8
+    game.player_row = 0
+    game.player_col = 0
+    game.collectible_row = 1
+    game.collectible_col = 1
+    game.hazard_row = 2
+    game.hazard_col = 2
+    game.show_end_screen("You win!")
+    output = capsys.readouterr().out
+    assert "Score: 8/10" in output
+
+
+def test_show_end_screen_displays_grid(capsys):
+    """End screen prints the grid."""
+    game.player_row = 1
+    game.player_col = 1
+    game.collectible_row = 3
+    game.collectible_col = 3
+    game.hazard_row = 4
+    game.hazard_col = 4
+    game.show_end_screen("Game Over!")
+    output = capsys.readouterr().out
+    assert "[P]" in output
+    assert "[*]" in output
+    assert "[X]" in output
+
+
+# ── Play again tests ────────────────────────────────────────────
+
+def test_play_again_returns_true_for_y(monkeypatch):
+    """play_again returns True when user enters 'y'."""
+    monkeypatch.setattr("builtins.input", lambda _: "y")
+    assert game.play_again() is True
+
+
+def test_play_again_returns_true_for_uppercase_y(monkeypatch):
+    """play_again returns True for uppercase 'Y'."""
+    monkeypatch.setattr("builtins.input", lambda _: "Y")
+    assert game.play_again() is True
+
+
+def test_play_again_returns_false_for_n(monkeypatch):
+    """play_again returns False when user enters 'n'."""
+    monkeypatch.setattr("builtins.input", lambda _: "n")
+    assert game.play_again() is False
+
+
+def test_play_again_returns_false_for_uppercase_n(monkeypatch):
+    """play_again returns False for uppercase 'N'."""
+    monkeypatch.setattr("builtins.input", lambda _: "N")
+    assert game.play_again() is False
+
+
+def test_play_again_retries_on_invalid_input(monkeypatch):
+    """play_again reprompts on bad input, then accepts valid input."""
+    inputs = iter(["maybe", "sure", "n"])
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+    assert game.play_again() is False
+
+
+def test_play_again_retries_before_accepting_y(monkeypatch):
+    """play_again reprompts on bad input, then accepts 'y'."""
+    inputs = iter(["abc", "123", "y"])
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+    assert game.play_again() is True
